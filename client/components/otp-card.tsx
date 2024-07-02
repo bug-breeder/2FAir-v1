@@ -14,6 +14,7 @@ import {
 import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import * as OTPAuth from "otpauth";
 import QRCode from "qrcode.react";
+import { useDeviceContext } from "@/context/device-context";
 
 interface OTPCardProps {
   otp: {
@@ -39,9 +40,11 @@ const OTPCard: React.FC<OTPCardProps> = ({
   const [remainingTime, setRemainingTime] = useState(otp.period);
   const [currentCode, setCurrentCode] = useState("");
   const [showQR, setShowQR] = useState(false);
-  const [showContextMenu, setShowContextMenu] = useState(false);
   const longPressTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
+
+  const { isTouchDevice, showContextMenu, setShowContextMenu } =
+    useDeviceContext();
 
   const totp = new OTPAuth.TOTP({
     issuer: otp.issuer,
@@ -87,11 +90,12 @@ const OTPCard: React.FC<OTPCardProps> = ({
 
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
-    if (navigator.maxTouchPoints > 0) {
-      setShowContextMenu(true);
+    if (!isTouchDevice) {
+      setActiveMenu(event.clientX, event.clientY);
     }
+    // DO NOT DELETE THIS COMMENTED CODE
     // else {
-    //   setActiveMenu(event.clientX, event.clientY);
+    //   setShowContextMenu(true);
     // }
   };
 
@@ -100,7 +104,7 @@ const OTPCard: React.FC<OTPCardProps> = ({
     isLongPress.current = false;
     longPressTimeout.current = setTimeout(() => {
       isLongPress.current = true;
-      if (navigator.maxTouchPoints == 0)
+      if (!isTouchDevice)
         setActiveMenu(event.touches[0].clientX, event.touches[0].clientY);
       else setShowContextMenu(true);
     }, 500);
@@ -171,7 +175,7 @@ const OTPCard: React.FC<OTPCardProps> = ({
           </CardFooter>
         </Card>
       </Tooltip>
-      {navigator.maxTouchPoints == 0 && isActive && (
+      {!isTouchDevice && isActive && (
         <Dropdown isOpen onClose={closeMenu}>
           <DropdownTrigger>
             {activeMenu && (
@@ -201,7 +205,7 @@ const OTPCard: React.FC<OTPCardProps> = ({
           </DropdownMenu>
         </Dropdown>
       )}
-      {showContextMenu && navigator.maxTouchPoints > 0 && (
+      {showContextMenu && isTouchDevice && (
         <Modal
           size="sm"
           hideCloseButton={true}
