@@ -9,6 +9,7 @@ import {
   DropdownItem,
   Modal,
   ModalContent,
+  Button,
 } from "@nextui-org/react";
 import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import * as OTPAuth from "otpauth";
@@ -38,6 +39,7 @@ const OTPCard: React.FC<OTPCardProps> = ({
   const [remainingTime, setRemainingTime] = useState(otp.period);
   const [currentCode, setCurrentCode] = useState("");
   const [showQR, setShowQR] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
   const longPressTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
@@ -85,7 +87,12 @@ const OTPCard: React.FC<OTPCardProps> = ({
 
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
-    setActiveMenu(event.clientX, event.clientY);
+    if (navigator.maxTouchPoints > 0) {
+      setShowContextMenu(true);
+    }
+    // else {
+    //   setActiveMenu(event.clientX, event.clientY);
+    // }
   };
 
   const handleLongPressStart = (event: React.TouchEvent) => {
@@ -93,7 +100,9 @@ const OTPCard: React.FC<OTPCardProps> = ({
     isLongPress.current = false;
     longPressTimeout.current = setTimeout(() => {
       isLongPress.current = true;
-      setActiveMenu(event.touches[0].clientX, event.touches[0].clientY);
+      if (navigator.maxTouchPoints == 0)
+        setActiveMenu(event.touches[0].clientX, event.touches[0].clientY);
+      else setShowContextMenu(true);
     }, 500);
     event.preventDefault(); // Prevent default behavior to avoid text selection
   };
@@ -162,7 +171,7 @@ const OTPCard: React.FC<OTPCardProps> = ({
           </CardFooter>
         </Card>
       </Tooltip>
-      {isActive && (
+      {navigator.maxTouchPoints == 0 && isActive && (
         <Dropdown isOpen onClose={closeMenu}>
           <DropdownTrigger>
             {activeMenu && (
@@ -182,11 +191,33 @@ const OTPCard: React.FC<OTPCardProps> = ({
               Show QR
             </DropdownItem>
             <DropdownItem key="edit">Edit</DropdownItem>
-            <DropdownItem key="delete" className="text-danger">
+            <DropdownItem
+              key="delete"
+              className="text-danger"
+              onClick={() => alert("deleted")}
+            >
               Delete
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
+      )}
+      {showContextMenu && navigator.maxTouchPoints > 0 && (
+        <Modal
+          size="sm"
+          hideCloseButton={true}
+          isOpen={showContextMenu}
+          onClose={() => setShowContextMenu(false)}
+        >
+          <ModalContent>
+            <div className="flex flex-col gap-2 flex-grow overflow-hidden items-center">
+              <Button onClick={() => setShowQR(true)}>Show QR</Button>
+              <Button>Edit</Button>
+              <Button color="danger" onClick={() => alert("deleted")}>
+                Delete
+              </Button>
+            </div>
+          </ModalContent>
+        </Modal>
       )}
       {showQR && (
         <Modal isOpen={showQR} onClose={() => setShowQR(false)}>
