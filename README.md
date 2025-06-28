@@ -1,3 +1,19 @@
+# ⚠️ This Repository Has Been Archived
+
+This repository is an old and archived version of 2FAir. It served as a proof of concept (POC) before creating [2fair.app](https://2fair.app/).
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 2FAir - Cloud Based Two-Factor Authentication Manager
 
 2FAir is a powerful and easy-to-use two-factor authentication (2FA) manager that helps you secure your accounts with OTP (One-Time Password) codes. Manage your 2FA codes, scan QR codes, and generate secure OTPs effortlessly with 2FAir.
